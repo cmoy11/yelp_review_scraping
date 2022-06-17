@@ -126,7 +126,7 @@ def get_reviews(hyphen_restaurants, city):
         reviews[restaurant] = review_information
 
         # writes csv files for each restaurant
-        filename = f"{city}/review_csvs/{restaurant}.csv"
+        filename = f"{city}/not-black-owned/review_csvs/{restaurant}.csv"
         with open(filename, "w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(["date", "rating", "review"])
@@ -149,11 +149,11 @@ def get_reviews(hyphen_restaurants, city):
 def main():
     print('starting')
     # restaurants = get_black_owned()
-    restaurants = ['happy-ice', 'the-memphis-grill', 'snoball-shop', 'traceys-belizean-restaurant']
+    restaurants = ['REDBIRD', 'CHOSUN GALBEE', 'HAE JANG CHON', 'republique', 'bestia']
     # Chicago: ['ina mae', 'peachs restaurant', 'batter and berries', '14 parish chicago', 'aint she sweet cafe', 'andysunflower cafe', 'banis beets']
     # Detroit: ['seasoned vegan', 'safari', 'silvana', 'sisters carribean cuisine', 'sugar hill creamery', 'fyahbun creative', 'jasmines carribean cuisine', 'le prive', 'meske']
-    # hyphenated_restaurants = hyphenate(restaurants)
-    non_valid = get_reviews(restaurants, 'los-angeles')
+    hyphenated_restaurants = hyphenate(restaurants)
+    non_valid = get_reviews(hyphenated_restaurants, 'los-angeles')
     print(f"not valid restaurants: {non_valid}")
     print('done')
 

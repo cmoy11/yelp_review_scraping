@@ -19,6 +19,7 @@ def create_visualizations(city):
             csv_files.append(f)
 
     all_reviews = []
+    tdata = {}
     for file in csv_files:
         print(file)
         if file == f'{city}/review_csvs/.DS_Store':
@@ -96,15 +97,18 @@ def create_visualizations(city):
                     csvwriter.writerow([date, converted_date, rating, average, review])
 
             # creates data visualization plotting number of reviews and average star rating for each restaurant
-            dates = dates = [DT.datetime.strptime(str(int(review[1])),'%Y%m%d') for review in averaged_data]
+            dates = [str(DT.datetime.strptime(str(int(review[1])),'%Y%m%d'))[:10] for review in averaged_data]
+            raw_dates = [np.datetime64(d) for d in dates]
             num_reviews = range(1, len(averaged_data) + 1)
             averages = [x[3] for x in averaged_data]
+            total_reviews = len(averaged_data)
+            final_average = averages[-1]
 
             fig, ax1 = plt.subplots()
 
             ax2 = ax1.twinx()
-            ax1.plot(dates, num_reviews, 'r-')
-            ax2.plot(dates, averages, 'b-')
+            ax1.plot(raw_dates, num_reviews, 'r-')
+            ax2.plot(raw_dates, averages, 'b-')
 
             xfmt = mdates.DateFormatter('%Y-%m-%d')
             ax1.xaxis.set_major_formatter(xfmt)
@@ -123,8 +127,33 @@ def create_visualizations(city):
             plt.tight_layout()
             plt.show()
 
+            # gets data off of plots
+            t0_reviewcount = int(np.interp(np.datetime64('2020-02-15'), raw_dates, num_reviews))
+            t0_average = round(np.interp(np.datetime64('2020-02-15'), raw_dates, averages),2)
+            t1_reviewcount = int(np.interp(np.datetime64('2020-03-15'), raw_dates, num_reviews))
+            t1_average = round(np.interp(np.datetime64('2020-03-15'), raw_dates, averages),2)
+            t2_reviewcount = int(np.interp(np.datetime64('2020-05-25'), raw_dates, num_reviews))
+            t2_average = round(np.interp(np.datetime64('2020-05-25'), raw_dates, averages),2)
+            t3_reviewcount = int(np.interp(np.datetime64('2020-06-25'), raw_dates, num_reviews))
+            t3_average = round(np.interp(np.datetime64('2020-06-25'), raw_dates, averages),2)
+            t4_reviewcount = int(np.interp(np.datetime64('2020-12-25'), raw_dates, num_reviews))
+            t4_average = round(np.interp(np.datetime64('2020-12-25'), raw_dates, averages),2)
+
+            print({restaurant_name:(total_reviews, final_average, t0_reviewcount, t0_average, t1_reviewcount, t1_average, t2_reviewcount, t2_average, t3_reviewcount, t3_average, t4_reviewcount, t4_average)})
+            tdata[restaurant_name] = [total_reviews, final_average, t0_reviewcount, t0_average, t1_reviewcount, t1_average, t2_reviewcount, t2_average, t3_reviewcount, t3_average, t4_reviewcount, t4_average]
+
             print(f'done with {file}')
 
+    print(tdata)
+    # writes file for tdata
+    filename = f'tdata/{city}-tdata.csv'
+    with open(filename, "w") as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(["restaurant_name", 'total_num_reveiws', 'final_average', "t0_reviewcount", "t0_averagerating", "t1_reviewcount", "t1_averagerating", "t2_reviewcount", "t2_averagerating", "t3_reviewcount", "t3_averagerating", "t4_reviewcount", "t4_averagerating"])
+        for key in tdata.keys():
+            data = tdata[key]
+            csvwriter.writerow([key, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11]])
+    
     # creates same visualization as above for all reviews
     sorted_all_reviews = sorted(all_reviews, key = lambda x:x[1])
     sum = 0
@@ -238,11 +267,11 @@ def nlp(reviews):
     return allWordExceptStopDist.most_common(30)
 
 def main():
-    # city codes: Detroit-001, Chicago-002, New York-003, LA-004
-    reviews = create_visualizations('detroit')
+    # city codes: Detroit-001, Chicago-002, New York-003, LA black-owned-004, LA not-black-owned-005
+    reviews = create_visualizations('new-york')
     cur, conn = create_database()
-    create_city_database(cur, conn, 'detroit')
-    populate_reviews(cur, conn, reviews, 'detroit', '001')
+    create_city_database(cur, conn, 'newYork')
+    populate_reviews(cur, conn, reviews, 'newYork', '003')
     print(nlp(reviews))
 
 if __name__ == '__main__':
